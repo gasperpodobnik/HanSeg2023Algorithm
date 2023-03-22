@@ -6,6 +6,39 @@ logger = logging.getLogger(__name__)
 
 from custom_algorithm import Hanseg2023Algorithm
 
+LABEL_dict = {
+    "background": 0,
+    "A_Carotid_L": 1,
+    "A_Carotid_R": 2,
+    "Arytenoid": 3,
+    "Bone_Mandible": 4,
+    "Brainstem": 5,
+    "BuccalMucosa": 6,
+    "Cavity_Oral": 7,
+    "Cochlea_L": 8,
+    "Cochlea_R": 9,
+    "Cricopharyngeus": 10,
+    "Esophagus_S": 11,
+    "Eye_AL": 12,
+    "Eye_AR": 13,
+    "Eye_PL": 14,
+    "Eye_PR": 15,
+    "Glnd_Lacrimal_L": 16,
+    "Glnd_Lacrimal_R": 17,
+    "Glnd_Submand_L": 18,
+    "Glnd_Submand_R": 19,
+    "Glnd_Thyroid": 20,
+    "Glottis": 21,
+    "Larynx_SG": 22,
+    "Lips": 23,
+    "OpticChiasm": 24,
+    "OpticNrv_L": 25,
+    "OpticNrv_R": 26,
+    "Parotid_L": 27,
+    "Parotid_R": 28,
+    "Pituitary": 29,
+    "SpinalCord": 30,
+}
 
 class MyHanseg2023Algorithm(Hanseg2023Algorithm):
     def __init__(self):
@@ -14,11 +47,11 @@ class MyHanseg2023Algorithm(Hanseg2023Algorithm):
     def predict(self, *, image_ct: sitk.Image, image_mrt1: sitk.Image) -> sitk.Image:
         
         # dummy example that produces an empty segmentation
-        pred_seg = image_ct * 0
-        pred_seg = sitk.Cast(pred_seg, sitk.sitkUInt8)
+        output_seg = image_ct * 0
         
         # output should be a sitk image with the same size, spacing, origin and direction as the original input image_ct
-        return pred_seg
+        output_seg = sitk.Cast(output_seg, sitk.sitkUInt8)
+        return output_seg
 
 
 if __name__ == "__main__":

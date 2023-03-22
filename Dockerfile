@@ -21,6 +21,8 @@ RUN python -m piptools sync requirements.txt
 
 COPY --chown=user:user custom_algorithm.py /opt/app/
 COPY --chown=user:user process.py /opt/app/
-# COPY --chown=algorithm:algorithm checkpoint /opt/algorithm/checkpoint # This is the checkpoint file
+
+# This is the checkpoint file, modify /local/path/to/the/checkpoint to your needs
+COPY --chown=algorithm:algorithm /local/path/to/the/checkpoint /opt/algorithm/checkpoint
 
 ENTRYPOINT [ "python", "-m", "process" ]
