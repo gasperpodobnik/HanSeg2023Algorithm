@@ -5,7 +5,7 @@ Author: G. Podobnik*\
 
 This docker image serves as a template for preparing an algorithm docker image for the **[HaN-Seg 2023 challenge](https://han-seg2023.grand-challenge.org/)**. It packs some scripts and path definitions that are necessary to run your algorithm on the grand-challenge.org platform, so you do not have to worry about that.
 
-You will have to provide all files to run your model in a docker container. This example may be of help for this. We also provide a quick explanation of how the container works [here](https://www.youtube.com/watch?v=Zkhrwark3bg).
+<sub>(The authors of the MIDOG challenge kindly provided a introduction to docker containers and how to prepare an algorithm docker image. Here is the link to their video: https://www.youtube.com/watch?v=Zkhrwark3bg)</sub>
 
 For reference, you may also want to read the blog post of grand-challenge.org on [how to create an algorithm](https://grand-challenge.org/blogs/create-an-algorithm/).
 
@@ -33,7 +33,7 @@ pip install evalutils
 
 Optional (and strongly recommended): If you want to have GPU support for local testing, you want to install the [NVIDIA container toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html)
 
-As stated by the grand-challenge team:
+[As stated by the grand-challenge team](https://grand-challenge.org/documentation/setting-up-wsl-with-gpu-support-for-windows-11/):
 >Windows tip: It is highly recommended to install [Windows Subsystem for Linux (WSL)](https://docs.microsoft.com/en-us/windows/wsl/install-win10) to work with Docker on a Linux environment within Windows. Please make sure to install WSL 2 by following the instructions on the same page. In this tutorial, we have used WSL 2 with Ubuntu 18.04 LTS. Also, note that the basic version of WSL 2 does not come with GPU support. Please [watch the official tutorial by Microsoft on installing WSL 2 with GPU support](https://www.youtube.com/watch?v=PdxXlZJiuxA). The alternative is to work purely out of Ubuntu, or any other flavor of Linux.
 
 ## 2. An overview of the structure of this example <a name="overview"></a>
@@ -43,11 +43,12 @@ This a dummy example that produces on empty segmentation mask. The main files ar
 
 - [process.py](process.py): This is the main file that is executed by the container and the best location to implement inference of your algorithm. It includes the `predict()` method that provides the the CT image (`image_ct`) and MR image (`image_mrt1`), both are given in `SimpleITK.Image` format. \
 This method should return segmentation (`output_seg`) in form of `SimpleITK.Image` that should have the same *origin*, *spacing*, *size* and *direction* as the `image_ct` (this is because all ground truth segmentations were prepared in the CT image domain). Saving of `output_seg` is already handled by the the `Hanseg2023Algorithm` class, so you do not have to worry about that. This script also includes `LABEL_dict` dictionary that can be used to adjust output segmentation labels (if your algorithm does not already return expected labels).\
-**Note**: `output_seg` should only include integer labels between 0-30 (no floating point values) and should be casted to `sitk.sitkUInt8` before returning it. 
+**Note 1**: `image_ct` and `image_mrt1` are not preprocessed to same spacing/size/origin, nor are they registered, so this is something that you might want to do before feeding them top your model (of course this depends what method are you using). To avoid unwanted registration errord, you should note that most MR images have smaller field of view than CT image, however, we require a segmentation of the same size as CT image (similarly to the clinical practice).\
+**Note 2**: `output_seg` should only include integer labels between 0-30 (no floating point values) and should be casted to `sitk.sitkUInt8` before returning it. 
 
 ## 3. Embedding your algorithm into an algorithm docker container <a name="todocker"></a>
 
-We advise you to load and instanciate your model in the `__init__()` method of the `Hanseg2023Algorithm` class. This way, the model will be loaded only once when the container is started and not for each image. You can then use the `predict()` method to then process each image independently. You can, of course, also add additional methods to the `Hanseg2023Algorithm` class, include additional scripts and import all the required python packages. When adding additional scripts, make sure to add them to the `COPY` command in the [Dockerfile](Dockerfile) so that they are included in the container. All the required python packages should be listed in the [requirements.txt](requirements.txt) file so that they are installed the container is built on the grand-challenges server.
+We advise you to load and instanciate your model in the `__init__()` method of the `Hanseg2023Algorithm` class. This way, the model will be loaded only once when the container is started and not for each image. You can then use the `predict()` method to then process each image independently. You can, of course, also add additional functions/methods to the `Hanseg2023Algorithm` class (such as a function to register CT and MR image), include additional scripts and import all the required python packages. When adding additional scripts, make sure to add them to the `COPY` command in the [Dockerfile](Dockerfile) so that they are included in the container. All the required python packages should be listed in the [requirements.txt](requirements.txt) file so that they are installed the container is built on the grand-challenges server.
 
 
 Most likely you will need a different base image to build your container (e.g., Tensorflow instead of Pytorch, or a different version). This can be achieved by changing the `FROM` command in the [Dockerfile](Dockerfile), e.g. `FROM nvcr.io/nvidia/pytorch:22.12-py3` for Pytorch.\
@@ -66,27 +67,13 @@ Finally, you need to run the `export.sh` (Linux) or `export.bat` script to packa
 
 ## 7. Creating an "Algorithm" on GrandChallenge and submitting your solution to the HaN-Seg 2023 Challenge
 
-** Note: Submission to grand-challenge.org will open on March 23th. **
+**Note: Submission to grand-challenge.org will open on March 23th.**
 
-In order to submit your docker container, you first have to add an **Algorithm** entry for your docker container [here](https://han-seg2023.grand-challenge.org/evaluation/preliminary-test-phase/submissions/create/).
-
-
-After saving, you can add your docker container (you can also overwrite your container here):
-
-![uploadcontainer](https://user-images.githubusercontent.com/10051592/128370733-7445e252-a354-4c44-9155-9f232cd9f220.jpg)
-
-Please note that it can take a while (several minutes) until the container becomes active. You can determine which one is active in the same dialog:
-
-![containeractive](https://user-images.githubusercontent.com/10051592/128373241-83102a43-aad7-4457-b068-a6c7cc5a3b98.jpg)
-
-You can also try out your algorithm. Please note that you will require an image that has the DPI property set in order to use this function. You can use the image test/007.tiff provided as part of this container as test image.
-
-![tryout](https://user-images.githubusercontent.com/10051592/128373614-30b76cf6-2b2d-4d5d-87db-b8c67b47b64f.jpg)
-
-Finally, you can submit your docker container to MIDOG:
-
-![submit_container](https://user-images.githubusercontent.com/10051592/128371715-d8385754-806e-4420-ac5e-4c25cc38112a.jpg)
+- In order to submit your docker container, you first have to add an **Algorithm** entry for your docker container [here](https://han-seg2023.grand-challenge.org/evaluation/preliminary-test-phase/submissions/create/).
+- After saving, you can add your docker container (or you can also [overwrite your container](https://grand-challenge.org/documentation/exporting-the-container/))
+- Please note that it can take a while (several minutes) until the container becomes active (you can refresh the page to see the status)
+- You can also try out your algorithm. Please note that you will require an image that has the DPI property set in order to use this function. You can use on of the train images to test if predictions are as expected.
+- Finally, you can submit your docker container to HaN-Seg 2023 Challenge by clicking on the "Save" button
 
 ## General remarks
 - The training is not done as part of the docker container, so please make sure that you only run inference within the container.
-
