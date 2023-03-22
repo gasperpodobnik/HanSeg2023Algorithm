@@ -15,7 +15,6 @@ from evalutils.exceptions import FileLoaderError, ValidationError
 from evalutils.validators import DataFrameValidator
 from evalutils.io import (
     ImageLoader,
-    first_int_in_filename_key,
 )
 
 logger = logging.getLogger(__name__)
@@ -40,21 +39,6 @@ class HanSegUniquePathIndicesValidator(DataFrameValidator):
             paths_mrt1
         ), "The number of CT and MR images is not equal."
 
-        assert all(
-            [
-                pth_ct.name.replace("CT", "") == pth_mrt1.name.replace("MR_T1", "")
-                for pth_ct, pth_mrt1 in zip(paths_ct, paths_mrt1)
-            ]
-        ), "The CT and MR images do not match in image_ids."
-
-        idx = [first_int_in_filename_key(Path(p)) for p in paths]
-
-        if len(set(idx)) != len(paths_ct):
-            raise ValidationError(
-                "The first number is each filename is not unique, please "
-                "check that your files are named correctly."
-            )
-
 
 class HanSegUniqueImagesValidator(DataFrameValidator):
     """
@@ -78,12 +62,10 @@ class HanSegUniqueImagesValidator(DataFrameValidator):
             )
 
 
-class Hanseg2023algorithm(SegmentationAlgorithm):
+class Hanseg2023Algorithm(SegmentationAlgorithm):
     def __init__(
         self,
-        input_path=Path(
-            "/media/medical/projects/head_and_neck/onkoi_2019/HaN-Seg-zenodo/Preliminary_Test_Phase_Phase/"
-        ),
+        input_path=Path("/input/images/"),
         output_path=Path("/output/images/head_neck_oar/"),
         **kwargs,
     ):
@@ -144,8 +126,7 @@ class Hanseg2023algorithm(SegmentationAlgorithm):
         segmentation_path = self._output_path / input_image_file_path_ct.name.replace(
             "_CT", "_seg"
         )
-        if not self._output_path.exists():
-            self._output_path.mkdir()
+        self._output_path.mkdir(parents=True, exist_ok=True)
         sitk.WriteImage(segmented_nodules, str(segmentation_path), True)
 
         # Write segmentation file path to result.json for this case

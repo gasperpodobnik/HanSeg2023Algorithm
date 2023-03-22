@@ -19,7 +19,8 @@ RUN python -m piptools sync requirements.txt
 
 
 
+COPY --chown=user:user custom_algorithm.py /opt/app/
 COPY --chown=user:user process.py /opt/app/
-COPY --chown=algorithm:algorithm checkpoint /opt/algorithm/checkpoint # This is the checkpoint file
+# COPY --chown=algorithm:algorithm checkpoint /opt/algorithm/checkpoint # This is the checkpoint file
 
 ENTRYPOINT [ "python", "-m", "process" ]

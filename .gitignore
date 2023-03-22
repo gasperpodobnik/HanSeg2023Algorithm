@@ -106,3 +106,9 @@ ENV/
 
 # vscode
 .vscode/
+
+test_local.sh
+*.tar.gz
+
+*.mha
+output/
