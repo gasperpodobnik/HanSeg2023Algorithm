@@ -63,7 +63,24 @@ To test if all dependencies are met, you should run the file `build.bat` (Window
 
 ## 5. Testing your container <a name="test"></a>
 
-To test your container, you should run `test.bat` (on Windows) or `test.sh` (on Linux, might require sudo priviledges). This will run the test image(s) provided in the test folder through your model. 
+Before you run and tests, you should copy a few test images (or at least one) to the project `test` directory. The test images can be in the same format as the images provided in our Zenodo dataset and need to be organized as follows:
+```
+project
+│   README.md
+│   ...
+└───test
+    └───images
+        └───ct
+        │       e.g. case_01_IMG_CT.nrrd
+        │       ...
+        │       
+        └───t1-mri
+        │       e.g. case_01_IMG_MR_T1.nrrd
+        │       ...
+```
+After you prepare the `test` directory and before you make any modifications the `process.py` script, you can run the `test.bat` (Windows) or `test.sh` (Linux) script to test if you successfully installed everything and copied all the required files to the `test` directory. If the test is successful, there should be a couple of dummy segmentation files in the `output/images/head_neck_oar` directory that are automatically created by the test script.
+
+You can then proceed to modify the `process.py` script to implement your algorithm (do not forget to also modify the [Dockerfile](Dockerfile#L1) `FROM` command and [set the path to your model weights](Dockerfile#L26)). To test your container, you should run `test.bat` (on Windows) or `test.sh` (on Linux, might require sudo priviledges). This will run the test image(s) provided in the test folder through your model and save predicted segmentation masks to the `output/images/head_neck_oar` directory. You can then compare these segmentation masks with the ones that you expected to receive from the model. If they match, that's a good sign that your algorithm is working correctly. If not, you should check the `process.py` script and make sure that inference code is correct.
 ## 6. Generating the bundle for uploading your algorithm <a name="export"></a>
 
 Finally, you need to run the `export.sh` (Linux) or `export.bat` script to package your docker image. This step creates a file with the extension ".tar.gz", which you can then upload to grand-challenge to submit your algorithm.
