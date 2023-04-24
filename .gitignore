@@ -111,4 +111,5 @@ test_local.sh
 *.tar.gz
 
 *.mha
-output/
+output/*
+test/*

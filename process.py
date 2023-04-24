@@ -46,8 +46,13 @@ class MyHanseg2023Algorithm(Hanseg2023Algorithm):
 
     def predict(self, *, image_ct: sitk.Image, image_mrt1: sitk.Image) -> sitk.Image:
         
-        # dummy example that produces an empty segmentation
+        # create an empty segmentation same size as ct image
         output_seg = image_ct * 0
+        # inpaint a simple cuboid shape in the 3D segmentation mask
+        ct_shape = image_ct.GetSize()
+        output_seg[int(ct_shape[0]*0.1):int(ct_shape[0]*0.6), 
+                   int(ct_shape[1]*0.2):int(ct_shape[1]*0.7), 
+                   int(ct_shape[2]*0.3):int(ct_shape[2]*0.8)] = 1
         
         # output should be a sitk image with the same size, spacing, origin and direction as the original input image_ct
         output_seg = sitk.Cast(output_seg, sitk.sitkUInt8)

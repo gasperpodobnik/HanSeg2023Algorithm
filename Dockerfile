@@ -10,7 +10,7 @@ WORKDIR /opt/app
 
 ENV PATH="/home/user/.local/bin:${PATH}"
 
-RUN python -m pip install --user -U pip && python -m pip install --user pip-tools
+RUN python -m pip install --user -U pip && python -m pip install --user pip-tools && python -m pip install --upgrade pip
 
 
 
@@ -22,7 +22,7 @@ RUN python -m piptools sync requirements.txt
 COPY --chown=user:user custom_algorithm.py /opt/app/
 COPY --chown=user:user process.py /opt/app/
 
-# This is the checkpoint file, modify /local/path/to/the/checkpoint to your needs
-COPY --chown=algorithm:algorithm /local/path/to/the/checkpoint /opt/algorithm/checkpoint
+# This is the checkpoint file, uncomment the line below and modify /local/path/to/the/checkpoint to your needs
+# COPY --chown=algorithm:algorithm /local/path/to/the/checkpoint /opt/algorithm/checkpoint
 
 ENTRYPOINT [ "python", "-m", "process" ]
